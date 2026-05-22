@@ -1,0 +1,12 @@
+{% extends "checkout/base.html" %}
+{% block title %}Editar producto{% endblock %}
+{% block content %}
+<section class="section narrow">
+  <h1>Editar {{ product.name }}</h1>
+  <form method="post" class="form-grid">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar</button>
+  </form>
+</section>
+{% endblock %}

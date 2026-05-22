@@ -1,0 +1,51 @@
+{% extends "checkout/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<section class="section">
+  <h1>Dashboard operativo</h1>
+  <div class="metrics">
+    <div><span>Productos activos</span><strong>{{ active_products }}</strong></div>
+    <div><span>Analisis IA</span><strong>{{ runs_count }}</strong></div>
+    <div><span>Detecciones</span><strong>{{ detections_count }}</strong></div>
+    <div><span>Ventas</span><strong>{{ sales_count }}</strong></div>
+    <div><span>Total vendido</span><strong>{{ sales_total|floatformat:2 }}</strong></div>
+  </div>
+</section>
+
+<section class="section split">
+  <div>
+    <h2>Ultimas ventas</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Total</th><th>Fecha</th></tr></thead>
+        <tbody>
+          {% for sale in recent_sales %}
+            <tr>
+              <td><a href="{% url 'checkout:sale_detail' sale.id %}">#{{ sale.id }}</a></td>
+              <td>{{ sale.total|floatformat:2 }}</td>
+              <td>{{ sale.created_at|date:"d/m/Y H:i" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3">No hay ventas.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div>
+    <h2>Productos mas vendidos</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Producto</th><th>Unidades</th></tr></thead>
+        <tbody>
+          {% for product in top_products %}
+            <tr><td>{{ product.name }}</td><td>{{ product.sold_units }}</td></tr>
+          {% empty %}
+            <tr><td colspan="2">Sin datos de ventas.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

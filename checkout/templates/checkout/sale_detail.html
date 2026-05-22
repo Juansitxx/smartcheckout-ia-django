@@ -1,0 +1,27 @@
+{% extends "checkout/base.html" %}
+{% block title %}Venta #{{ sale.id }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="section-head">
+    <h1>Venta #{{ sale.id }}</h1>
+    <a href="{% url 'checkout:sales' %}">Volver</a>
+  </div>
+  <p>Metodo: {{ sale.get_payment_method_display }} | Fecha: {{ sale.created_at|date:"d/m/Y H:i" }}</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th></tr></thead>
+      <tbody>
+        {% for item in sale.items.all %}
+          <tr>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.unit_price|floatformat:2 }}</td>
+            <td>{{ item.line_total|floatformat:2 }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="total-box"><span>Total venta</span><strong>{{ sale.total|floatformat:2 }}</strong></div>
+</section>
+{% endblock %}

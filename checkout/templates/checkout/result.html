@@ -1,0 +1,99 @@
+{% extends "checkout/base.html" %}
+{% block title %}Resultado #{{ run.id }}{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="section-head">
+    <h1>Resultado #{{ run.id }}</h1>
+    <a href="{% url 'checkout:home' %}">Nuevo analisis</a>
+  </div>
+
+  {% if run.status == "error" %}
+    <div class="message error">{{ run.error_message }}</div>
+  {% endif %}
+
+  <div class="image-grid">
+    <figure>
+      <figcaption>Imagen original</figcaption>
+      <img src="{{ run.image_original.url }}" alt="Imagen original">
+    </figure>
+    <figure>
+      <figcaption>Imagen procesada</figcaption>
+      {% if run.image_processed %}
+        <img src="{{ run.image_processed.url }}" alt="Imagen procesada">
+      {% else %}
+        <div class="empty-box">Sin imagen procesada</div>
+      {% endif %}
+    </figure>
+  </div>
+</section>
+
+<section class="section split">
+  <div>
+    <h2>Detecciones</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Clase</th>
+            <th>Confianza</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for det in run.detections_json %}
+            <tr>
+              <td>{{ det.class_name }}</td>
+              <td>{{ det.confidence|floatformat:2 }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="2">No hay detecciones.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div>
+    <h2>Carrito</h2>
+    {% if cart and cart.items.exists %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cant.</th>
+              <th>Precio</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in cart.items.all %}
+              <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.unit_price|floatformat:2 }}</td>
+                <td>{{ item.line_total|floatformat:2 }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="total-box">
+        <span>Total</span>
+        <strong>{{ cart.total|floatformat:2 }}</strong>
+      </div>
+      {% if cart.status == "draft" %}
+        <form method="post" action="{% url 'checkout:confirm_sale' cart.id %}" class="confirm-form">
+          {% csrf_token %}
+          {{ form.payment_method.label_tag }}
+          {{ form.payment_method }}
+          <button type="submit">Confirmar venta</button>
+        </form>
+      {% else %}
+        <span class="badge confirmed">Venta confirmada</span>
+      {% endif %}
+    {% else %}
+      <div class="empty-box">No se genero carrito con productos activos.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

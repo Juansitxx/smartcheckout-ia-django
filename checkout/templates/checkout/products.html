@@ -1,0 +1,37 @@
+{% extends "checkout/base.html" %}
+{% block title %}Productos{% endblock %}
+{% block content %}
+<section class="section">
+  <h1>Catalogo de productos</h1>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID clase</th>
+          <th>Clase IA</th>
+          <th>Producto</th>
+          <th>SKU</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td>{{ product.class_id }}</td>
+            <td>{{ product.class_name }}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.sku }}</td>
+            <td>{{ product.price|floatformat:2 }}</td>
+            <td>{{ product.stock }}</td>
+            <td><a href="{% url 'checkout:product_edit' product.id %}">Editar</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7">Ejecuta seed_products para cargar el catalogo inicial.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

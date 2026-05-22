@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Smart Checkout IA{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'checkout/styles.css' %}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{% url 'checkout:home' %}">Smart Checkout IA</a>
+    <nav class="nav">
+      <a href="{% url 'checkout:live' %}">Caja Live</a>
+      <a href="{% url 'checkout:dashboard' %}">Dashboard</a>
+      <a href="{% url 'checkout:products' %}">Productos</a>
+      <a href="{% url 'checkout:sales' %}">Ventas</a>
+      <a href="/admin/">Admin</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

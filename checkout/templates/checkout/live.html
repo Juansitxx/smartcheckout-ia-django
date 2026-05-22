@@ -1,0 +1,81 @@
+{% extends "checkout/base.html" %}
+{% load static %}
+{% block title %}Caja Live{% endblock %}
+{% block content %}
+<section class="live-shell">
+  <div class="live-main">
+    <div class="section-head">
+      <div>
+        <h1>Caja Live</h1>
+        <p>Camara del navegador integrada con Django y el modelo de ModeloDL.</p>
+      </div>
+      <div class="live-actions">
+        <select id="cameraSelect" aria-label="Seleccionar camara"></select>
+        <button id="refreshCameras" type="button">Actualizar</button>
+        <button id="startCamera" type="button">Iniciar</button>
+        <button id="stopCamera" type="button">Detener</button>
+      </div>
+    </div>
+
+    <div class="camera-stage">
+      <video id="cameraVideo" autoplay playsinline muted hidden></video>
+      <canvas id="frameCanvas" width="640" height="480"></canvas>
+      <canvas id="overlayCanvas" width="640" height="480"></canvas>
+    </div>
+
+    <div class="live-status-row">
+      <span>Estado: <strong id="liveStatus">detenido</strong></span>
+      <span>FPS: <strong id="fpsValue">0</strong></span>
+      <span>Latencia: <strong id="latencyValue">0 ms</strong></span>
+      <span>Detecciones: <strong id="detectionsCount">0</strong></span>
+    </div>
+  </div>
+
+  <aside class="live-side">
+    <section class="panel-block">
+      <div class="section-head compact">
+        <h2>Detecciones</h2>
+        <span class="auto-badge">Modo caja</span>
+      </div>
+      <div class="mode-row">
+        <label class="switch-row">
+          <input id="autoAddMode" type="checkbox" checked>
+          <span>Auto agregar</span>
+        </label>
+        <button id="addDetections" class="secondary-button" type="button">Agregar deteccion</button>
+      </div>
+      <div id="detectionsList" class="live-list"></div>
+    </section>
+
+    <section class="panel-block">
+      <div class="section-head compact">
+        <h2>Carrito</h2>
+        <button id="clearCart" class="secondary-button" type="button">Vaciar</button>
+      </div>
+      <div id="cartList" class="live-list"></div>
+      <div class="total-box"><span>Total</span><strong id="cartTotal">$0</strong></div>
+      <div class="confirm-form">
+        <select id="paymentMethod">
+          <option value="cash">Efectivo</option>
+          <option value="card">Tarjeta</option>
+          <option value="transfer">Transferencia</option>
+        </select>
+        <button id="confirmSale" type="button">Confirmar venta</button>
+      </div>
+      <div id="saleStatus" class="small-status"></div>
+    </section>
+  </aside>
+</section>
+
+<section class="section">
+  <h2>Ventas recientes</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>Metodo</th><th>Total</th><th>Fecha</th><th>Items</th></tr></thead>
+      <tbody id="salesHistory"></tbody>
+    </table>
+  </div>
+</section>
+
+<script src="{% static 'checkout/live.js' %}?v=20260521-gorra-confirm"></script>
+{% endblock %}

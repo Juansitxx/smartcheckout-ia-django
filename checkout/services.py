@@ -215,7 +215,12 @@ def normalize_payment_method(value: str) -> str:
 def load_products_from_yaml(path: Path | None = None) -> int:
     import yaml
 
-    catalog_path = Path(path or settings.SMART_PRODUCTS_PATH)
+    configured_catalog_path = Path(path or settings.SMART_PRODUCTS_PATH)
+    fallback_catalog_path = Path(getattr(settings, "BUNDLED_PRODUCTS_PATH", configured_catalog_path))
+    catalog_path = configured_catalog_path
+    if path is None and not catalog_path.exists() and fallback_catalog_path.exists():
+        catalog_path = fallback_catalog_path
+
     if not catalog_path.exists():
         raise FileNotFoundError(f"Catalogo no encontrado: {catalog_path}")
 

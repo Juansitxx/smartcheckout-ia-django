@@ -1,13 +1,15 @@
 from io import BytesIO
 from decimal import Decimal
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from django.test import TestCase, override_settings
 from PIL import Image
 
 from core import settings as project_settings
-from .ai import SmartCheckoutDetector
+from .ai import SmartCheckoutDetector, resolve_existing_asset_path
 from .models import Cart, CartItem, Product
-from .services import serialize_detection_for_live
+from .services import load_products_from_yaml, serialize_detection_for_live
 
 
 class CartTests(TestCase):
@@ -97,6 +99,42 @@ class SettingsPathResolutionTests(TestCase):
             resolved,
             (project_settings.BASE_DIR / "model_assets" / "config" / "service" / "products.yaml").resolve(),
         )
+
+
+class AssetFallbackTests(TestCase):
+    def test_model_path_falls_back_to_bundled_asset(self):
+        with TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            missing_model = tmp_path / "missing.pt"
+            bundled_model = tmp_path / "bundled.pt"
+            bundled_model.write_bytes(b"weights")
+
+            resolved = resolve_existing_asset_path(missing_model, bundled_model)
+
+            self.assertEqual(resolved, bundled_model)
+
+    def test_seed_products_falls_back_to_bundled_catalog(self):
+        catalog = """
+products:
+  soda:
+    sku: SKU-006
+    name: Soda
+    price: 3500
+""".strip()
+
+        with TemporaryDirectory() as tmp:
+            tmp_path = Path(tmp)
+            bundled_catalog = tmp_path / "products.yaml"
+            bundled_catalog.write_text(catalog, encoding="utf-8")
+
+            with override_settings(
+                SMART_PRODUCTS_PATH=tmp_path / "missing.yaml",
+                BUNDLED_PRODUCTS_PATH=bundled_catalog,
+            ):
+                total = load_products_from_yaml()
+
+        self.assertEqual(total, 1)
+        self.assertTrue(Product.objects.filter(class_name="soda").exists())
 
 
 class FakeYOLOModel:

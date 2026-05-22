@@ -113,12 +113,16 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-SMART_MODEL_DIR = get_path_env("SMART_MODEL_DIR", BASE_DIR / "model_assets")
+BUNDLED_MODEL_DIR = BASE_DIR / "model_assets"
+BUNDLED_MODEL_PATH = BUNDLED_MODEL_DIR / "models" / "YOLO" / "smart_checkout_model_small_v1.pt"
+BUNDLED_PRODUCTS_PATH = BUNDLED_MODEL_DIR / "config" / "service" / "products.yaml"
+
+SMART_MODEL_DIR = get_path_env("SMART_MODEL_DIR", BUNDLED_MODEL_DIR)
 SMART_MODEL_PATH = get_path_env(
-    "SMART_MODEL_PATH", SMART_MODEL_DIR / "models" / "YOLO" / "smart_checkout_model_small_v1.pt"
+    "SMART_MODEL_PATH", BUNDLED_MODEL_PATH
 )
 SMART_PRODUCTS_PATH = get_path_env(
-    "SMART_PRODUCTS_PATH", SMART_MODEL_DIR / "config" / "service" / "products.yaml"
+    "SMART_PRODUCTS_PATH", BUNDLED_PRODUCTS_PATH
 )
 SMART_DEVICE = os.getenv("SMART_DEVICE", "cpu")
 SMART_IMAGE_SIZE = int(os.getenv("SMART_IMAGE_SIZE", "640"))

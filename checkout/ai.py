@@ -27,10 +27,21 @@ class DetectionResult:
         }
 
 
+def resolve_existing_asset_path(configured_path: Path, fallback_path: Path) -> Path:
+    if configured_path.exists():
+        return configured_path
+    if fallback_path.exists():
+        return fallback_path
+    return configured_path
+
+
 class SmartCheckoutDetector:
     def __init__(self):
         self.model = None
-        self.model_path = Path(settings.SMART_MODEL_PATH)
+        self.model_path = resolve_existing_asset_path(
+            Path(settings.SMART_MODEL_PATH),
+            Path(getattr(settings, "BUNDLED_MODEL_PATH", settings.SMART_MODEL_PATH)),
+        )
         self.device = settings.SMART_DEVICE
 
     def load(self):

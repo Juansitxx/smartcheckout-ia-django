@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.test import TestCase, override_settings
 from PIL import Image
 
+from core import settings as project_settings
 from .ai import SmartCheckoutDetector
 from .models import Cart, CartItem, Product
 from .services import serialize_detection_for_live
@@ -67,6 +68,35 @@ class DetectorImageDecodingTests(TestCase):
         self.assertEqual(result["frame_height"], 8)
         self.assertEqual(len(result["detections"]), 1)
         self.assertEqual(result["detections"][0]["class_name"], "soda")
+
+
+class SettingsPathResolutionTests(TestCase):
+    def test_windows_path_is_ignored_on_posix(self):
+        default = project_settings.BASE_DIR / "model_assets" / "models" / "YOLO" / "smart_checkout_model_small_v1.pt"
+
+        resolved = project_settings.resolve_path_value(
+            r"C:\Users\Juan\Desktop\ModeloDL\models\YOLO\smart_checkout_model_small_v1.pt",
+            default,
+            project_settings.BASE_DIR,
+            platform_name="posix",
+        )
+
+        self.assertEqual(resolved, default.resolve())
+
+    def test_relative_path_uses_project_base_dir(self):
+        default = project_settings.BASE_DIR / "model_assets"
+
+        resolved = project_settings.resolve_path_value(
+            "model_assets/config/service/products.yaml",
+            default,
+            project_settings.BASE_DIR,
+            platform_name="posix",
+        )
+
+        self.assertEqual(
+            resolved,
+            (project_settings.BASE_DIR / "model_assets" / "config" / "service" / "products.yaml").resolve(),
+        )
 
 
 class FakeYOLOModel:

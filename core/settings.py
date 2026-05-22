@@ -27,11 +27,26 @@ def get_csv_env(name: str, default: list[str]) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
+def is_windows_absolute_path(value: str) -> bool:
+    return len(value) >= 3 and value[0].isalpha() and value[1] == ":" and value[2] in ("\\", "/")
+
+
+def resolve_path_value(value: str | None, default: Path, base_dir: Path, platform_name: str | None = None) -> Path:
+    platform_name = platform_name or os.name
+    if not value:
+        return default.resolve()
+    if platform_name != "nt" and is_windows_absolute_path(value):
+        return default.resolve()
+
+    path = Path(value)
+    if not path.is_absolute():
+        path = (base_dir / path).resolve()
+    return path
+
+
 def get_path_env(name: str, default: Path) -> Path:
     value = os.getenv(name)
-    path = Path(value) if value else default
-    if not path.is_absolute():
-        path = (BASE_DIR / path).resolve()
+    path = resolve_path_value(value, default, BASE_DIR)
     return path
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-smart-checkout-local-dev")

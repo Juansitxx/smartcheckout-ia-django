@@ -38,7 +38,8 @@ python manage.py runserver 0.0.0.0:8000
 
 Notas:
 
+- El repo incluye por defecto el modelo y el catalogo en `model_assets/`.
 - El proyecto ya no depende de OpenCV para arrancar en entornos headless.
-- Si vas a ejecutar la IA, configura `SMART_MODEL_PATH` y `SMART_PRODUCTS_PATH` con rutas validas dentro del Codespace.
+- Si quieres usar otros pesos o catalogos, configura `SMART_MODEL_PATH` y `SMART_PRODUCTS_PATH` en un archivo `.env` o variables de entorno.
 - Si necesitas hosts personalizados, define `DJANGO_ALLOWED_HOSTS` separado por comas.
 

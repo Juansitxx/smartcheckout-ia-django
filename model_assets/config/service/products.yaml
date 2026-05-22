@@ -1,0 +1,51 @@
+version: 1.0.0
+currency: "COP"
+
+products:
+  caja cereal:
+    sku: "FOO-CER-001"
+    name: "Cereal caja"
+    price: 14500
+    description: "Caja de cereal"
+
+  soda:
+    sku: "DRI-SOD-001"
+    name: "Soda"
+    price: 3500
+    description: "Bebida gaseosa"
+
+  manzana roja:
+    sku: "FRU-APL-001"
+    name: "Manzana roja"
+    price: 1800
+    description: "Manzana roja fresca"
+
+  zanahoria:
+    sku: "FRU-CAR-001"
+    name: "Zanahoria"
+    price: 1200
+    description: "Zanahoria fresca"
+
+  cepillo dental:
+    sku: "HYG-TBR-001"
+    name: "Cepillo de dientes"
+    price: 5500
+    description: "Cepillo dental"
+
+  papel higienico:
+    sku: "HYG-TPR-001"
+    name: "Papel higiénico"
+    price: 12000
+    description: "Rollo de papel higiénico."
+
+  gafas:
+    sku: "ACC-GLA-001"
+    name: "Gafas"
+    price: 25000
+    description: "Gafas"
+
+  gorra:
+    sku: "ACC-CAP-001"
+    name: "Gorra"
+    price: 30000
+    description: "Gorra"

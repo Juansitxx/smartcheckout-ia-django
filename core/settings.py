@@ -5,11 +5,34 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def load_env_file(path: Path) -> None:
+    if not path.exists():
+        return
+
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+load_env_file(BASE_DIR / ".env")
+
+
 def get_csv_env(name: str, default: list[str]) -> list[str]:
     value = os.getenv(name)
     if not value:
         return default
     return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def get_path_env(name: str, default: Path) -> Path:
+    value = os.getenv(name)
+    path = Path(value) if value else default
+    if not path.is_absolute():
+        path = (BASE_DIR / path).resolve()
+    return path
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-smart-checkout-local-dev")
 DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
@@ -75,12 +98,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-SMART_MODEL_DIR = Path(os.getenv("SMART_MODEL_DIR", r"C:\Users\Juan\Desktop\ModeloDL"))
-SMART_MODEL_PATH = Path(
-    os.getenv("SMART_MODEL_PATH", str(SMART_MODEL_DIR / "models" / "YOLO" / "smart_checkout_model_small_v1.pt"))
+SMART_MODEL_DIR = get_path_env("SMART_MODEL_DIR", BASE_DIR / "model_assets")
+SMART_MODEL_PATH = get_path_env(
+    "SMART_MODEL_PATH", SMART_MODEL_DIR / "models" / "YOLO" / "smart_checkout_model_small_v1.pt"
 )
-SMART_PRODUCTS_PATH = Path(
-    os.getenv("SMART_PRODUCTS_PATH", str(SMART_MODEL_DIR / "config" / "service" / "products.yaml"))
+SMART_PRODUCTS_PATH = get_path_env(
+    "SMART_PRODUCTS_PATH", SMART_MODEL_DIR / "config" / "service" / "products.yaml"
 )
 SMART_DEVICE = os.getenv("SMART_DEVICE", "cpu")
 SMART_IMAGE_SIZE = int(os.getenv("SMART_IMAGE_SIZE", "640"))

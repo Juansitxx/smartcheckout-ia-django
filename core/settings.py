@@ -4,9 +4,16 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def get_csv_env(name: str, default: list[str]) -> list[str]:
+    value = os.getenv(name)
+    if not value:
+        return default
+    return [item.strip() for item in value.split(",") if item.strip()]
+
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-smart-checkout-local-dev")
 DEBUG = os.getenv("DJANGO_DEBUG", "1") == "1"
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = get_csv_env("DJANGO_ALLOWED_HOSTS", ["127.0.0.1", "localhost", ".app.github.dev", ".github.dev"])
 
 INSTALLED_APPS = [
     "django.contrib.admin",

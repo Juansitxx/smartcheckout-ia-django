@@ -1,7 +1,10 @@
+from io import BytesIO
 from decimal import Decimal
 
 from django.test import TestCase, override_settings
+from PIL import Image
 
+from .ai import SmartCheckoutDetector
 from .models import Cart, CartItem, Product
 from .services import serialize_detection_for_live
 
@@ -47,3 +50,52 @@ class LiveDetectionSerializationTests(TestCase):
 
         self.assertFalse(detection["auto_add"])
         self.assertEqual(detection["product"]["name"], "Gorra")
+
+
+class DetectorImageDecodingTests(TestCase):
+    def test_predict_jpeg_bytes_without_opencv(self):
+        detector = SmartCheckoutDetector()
+        detector.model = FakeYOLOModel()
+
+        image = Image.new("RGB", (12, 8), color="white")
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG")
+
+        result = detector.predict_jpeg_bytes(buffer.getvalue())
+
+        self.assertEqual(result["frame_width"], 12)
+        self.assertEqual(result["frame_height"], 8)
+        self.assertEqual(len(result["detections"]), 1)
+        self.assertEqual(result["detections"][0]["class_name"], "soda")
+
+
+class FakeYOLOModel:
+    def predict(self, frame, **kwargs):
+        return [FakeYOLOResult()]
+
+
+class FakeYOLOResult:
+    names = {0: "soda"}
+    boxes = []
+
+    def __init__(self):
+        self.boxes = [FakeYOLOBox()]
+
+
+class FakeYOLOBox:
+    cls = [0]
+    conf = [0.91]
+    xyxy = []
+    xywhn = []
+
+    def __init__(self):
+        self.xyxy = [FakeTensor([1.0, 1.0, 10.0, 6.0])]
+        self.xywhn = [FakeTensor([0.45, 0.5, 0.75, 0.625])]
+
+
+class FakeTensor:
+    def __init__(self, values):
+        self._values = values
+
+    def tolist(self):
+        return self._values

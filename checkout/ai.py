@@ -1,11 +1,12 @@
 import time
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 from threading import Lock
 
-import cv2
 import numpy as np
 from django.conf import settings
+from PIL import Image, ImageDraw, ImageFont
 
 
 @dataclass
@@ -47,12 +48,10 @@ class SmartCheckoutDetector:
         self.load()
         started = time.time()
 
-        frame = cv2.imread(str(input_path))
-        if frame is None:
-            raise ValueError(f"No se pudo leer la imagen: {input_path}")
-
+        image = self._open_image(input_path)
+        frame = np.array(image)
         result = self.predict_frame(frame, started_at=started)
-        annotated = frame.copy()
+        annotated = image.copy()
         for detection in result["detections"]:
             self._draw_box(
                 annotated,
@@ -61,15 +60,12 @@ class SmartCheckoutDetector:
             )
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        cv2.imwrite(str(output_path), annotated)
+        annotated.save(output_path, format="JPEG")
         return result
 
     def predict_jpeg_bytes(self, image_bytes: bytes) -> dict:
         self.load()
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        if frame is None:
-            raise ValueError("No se pudo decodificar el frame de camara.")
+        frame = np.array(self._open_image(BytesIO(image_bytes)))
         return self.predict_frame(frame)
 
     def predict_frame(self, frame, started_at: float | None = None) -> dict:
@@ -115,21 +111,28 @@ class SmartCheckoutDetector:
         }
 
     @staticmethod
-    def _draw_box(image, bbox_xyxy, label):
+    def _open_image(source) -> Image.Image:
+        try:
+            with Image.open(source) as image:
+                return image.convert("RGB")
+        except OSError as exc:
+            raise ValueError(f"No se pudo leer la imagen: {source}") from exc
+
+    @staticmethod
+    def _draw_box(image: Image.Image, bbox_xyxy, label):
         x1, y1, x2, y2 = [int(v) for v in bbox_xyxy]
         color = (50, 205, 50)
-        cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
-        label_y = max(18, y1 - 8)
-        cv2.putText(
-            image,
-            label,
-            (x1, label_y),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.55,
-            color,
-            2,
-            cv2.LINE_AA,
+        drawer = ImageDraw.Draw(image)
+        font = ImageFont.load_default()
+        drawer.rectangle((x1, y1, x2, y2), outline=color, width=2)
+
+        label_y = max(0, y1 - 18)
+        text_box = drawer.textbbox((x1, label_y), label, font=font)
+        drawer.rectangle(
+            (text_box[0] - 3, text_box[1] - 2, text_box[2] + 3, text_box[3] + 2),
+            fill=(255, 255, 255),
         )
+        drawer.text((x1, label_y), label, fill=color, font=font)
 
 
 _detector = None
